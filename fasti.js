@@ -20,13 +20,13 @@
     var currAtom = firstAtom;
     
     // First way
-    function newObj(){  // function object  
-        if (!(this instanceof newObj)) { // dont need new
-           return new newObj();
+    function newObj1(myName){  // function object  
+        if (!(this instanceof newObj1)) { // dont need new
+           return new newObj1("sNew");
         }
         
         this.type = "new_obj";
-        this.text = "obj";
+        this.text = myName || "obj";
         this.mass = 20;
         this.rad = 20;
         this.pos = currAtom.pos.add(deltaRightVector);
@@ -37,19 +37,44 @@
     };
 
     // Second way
-    function appendAtom(){ // object literal
+    function newObj2(myName){ // object literal
         var myAtom = {
-            text : "lit",
+            text : myName || "lit",
             mass : 20,
             rad : 20,
             pos : currAtom.pos.add(deltaRightVector),
             speed : new Vector(0, 0)
         }
-
         currAtom = myAtom;
         return myAtom;
     };
 
+    function newObj2withSub(myName){ // object literal
+        var localSubObj = newSubObj("Sub 1");
+        var myAtom = {
+            text : myName || "lit",
+            mass : 20,
+            rad : 20,
+            pos : currAtom.pos.add(deltaRightVector),
+            subExpr : [localSubObj],
+            speed : new Vector(0, 0),
+        }
+//        myAtom.subExpr.push(localSubObj);
+        currAtom = myAtom;
+        return myAtom;
+    };
+    
+    function newSubObj(myName){ // object literal
+        var myAtom = {
+            text : myName || "lit",
+            mass : 20,
+            rad : 20,
+            pos : currAtom.pos.add(deltaDownVector),
+            speed : new Vector(0, 0)
+        }
+        return myAtom;
+    };
+    
     var startingExpr = [];
     startingExpr.push(firstAtom);
 
@@ -71,6 +96,11 @@
     // Handle input
     function keyDownHandler(e) {
         switch(e.keyCode) {
+            case 57:  // Open Parathesis
+            case 219: // Open bracket
+                startingExpr.push( newObj2withSub("([])"));
+                //startingExpr[stringExpr.length].subExpr.push(newSubObj());
+                break;
             case 39: // Right arrow
                 break;
             case 37: // Left arrow
@@ -78,13 +108,13 @@
             case 8: // Backspace
                 break;
             case 13: // Enter - Single step
-                    interpret(startingExpr);
+                interpret(startingExpr);
                 break;
             case 32: // Space - New node unless cur node is empty
                 if(e.shiftKey) {
-                    startingExpr.push( newObj()); // big
+                    startingExpr.push( newObj1()); // big
                 } else {
-                    startingExpr.push( appendAtom() );
+                    startingExpr.push( newObj2() );
                 }
                 break;
             case 112: // F1 - help page
@@ -118,7 +148,7 @@
 	};
 
     var deltaRightVector = new Vector(50,0);
-    var deltaDownVector = new Vector(0,20);
+    var deltaDownVector = new Vector(0,50);
 
 /*******                Graphics Lib                     ******/
     function drawText(myStr, posVector){
@@ -147,7 +177,13 @@
     // Draw a list of Nodes
     function drawList(myList){
         for(var i=0; i< myList.length; i++){
-            drawNode(startingExpr[i]);
+            drawNode(myList[i]);
+            //if (startingExpr[i].subExpr && startingExpr[i].subExpr.constructor === Array){
+            if (startingExpr[i].subExpr && startingExpr[i].subExpr instanceof Array){
+                //alert(i);
+                drawList(myList[i].subExpr);
+                
+            }
         }
     }
 
