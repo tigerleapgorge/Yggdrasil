@@ -39,7 +39,7 @@
     // Second way
     function newObj2(myName){ // object literal
         var myAtom = {
-            text : myName || "lit",
+            text : myName || "",
             mass : 20,
             rad : 20,
             pos : currAtom.pos.add(deltaRightVector),
@@ -60,7 +60,8 @@
             speed : new Vector(0, 0),
         }
 //        myAtom.subExpr.push(localSubObj);
-        currAtom = myAtom;
+        currAtom = myAtom.subExpr[0];
+        //currExpr = myAtom.subExpr; // wrong place
         return myAtom;
     };
     
@@ -76,15 +77,16 @@
     };
     
     var startingExpr = [];
+    var currExpr = startingExpr;
     startingExpr.push(firstAtom);
 
 
 /*******                Interpreter                     ******/
     function interpret(ND_list) {
-        if( ND_list.length >= 3 &&
-            ND_list[0].text ) { // if 3 or more nodes exists, take out the second one
-            
-            ND_list.splice(1,1); // start at second and take out 1 node.
+        if( ND_list.length >= 3 ) {
+            if ( ND_list[0].text == "CDR" ) { // if 3 or more nodes exists, take out the second one
+                ND_list.splice(0,1); // start at second and take out 1 node.
+            }
         }
 
     }
@@ -98,7 +100,8 @@
         switch(e.keyCode) {
             case 57:  // Open Parathesis
             case 219: // Open bracket
-                startingExpr.push( newObj2withSub("([])"));
+                currExpr.push( newObj2withSub("([])"));
+                currExpr = currExpr[currExpr.length-1].subExpr; //shift current list one level down
                 //startingExpr[stringExpr.length].subExpr.push(newSubObj());
                 break;
             case 39: // Right arrow
@@ -108,13 +111,15 @@
             case 8: // Backspace
                 break;
             case 13: // Enter - Single step
-                interpret(startingExpr);
+                interpret(startingExpr); // always starts from the top
                 break;
             case 32: // Space - New node unless cur node is empty
                 if(e.shiftKey) {
-                    startingExpr.push( newObj1()); // big
+                    currExpr.push( newObj1() ); // big
                 } else {
-                    startingExpr.push( newObj2() );
+                    currExpr.push( newObj2() );
+                    console.log("currExpr        : ", currExpr);
+                    console.log("currExpr.length : ", currExpr.length);
                 }
                 break;
             case 112: // F1 - help page
@@ -159,7 +164,7 @@
 
     // Draw a single Atom
     function drawNode(node) {
-        console.log("drawNode", node);
+        //console.log("drawNode", node);
 
         // Draw a circle
         ctx.beginPath();
@@ -176,10 +181,15 @@
 
     // Draw a list of Nodes
     function drawList(myList){
+        //console.log("drawing this list", myList);
+        //console.log("drawing this list length", myList.length);
         for(var i=0; i< myList.length; i++){
             drawNode(myList[i]);
-            //if (startingExpr[i].subExpr && startingExpr[i].subExpr.constructor === Array){
-            if (startingExpr[i].subExpr && startingExpr[i].subExpr instanceof Array){
+            if (myList[i].subExpr && 
+                myList[i].subExpr.constructor === Array &&
+                myList[i].subExpr.length &&
+                typeof myList[i].subExpr != 'undefined' ){
+            //if (startingExpr[i].subExpr && startingExpr[i].subExpr instanceof Array){
                 //alert(i);
                 drawList(myList[i].subExpr);
                 
@@ -189,7 +199,7 @@
 
     // Main Loop
     function drawAll(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear screen
         drawList(startingExpr)
 		requestAnimationFrame(drawAll);
     }
