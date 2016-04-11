@@ -59,6 +59,9 @@
             subExpr : [localSubObj],
             speed : new Vector(0, 0),
         }
+
+        localSubObj.parentAtom = myAtom;
+        
 //        myAtom.subExpr.push(localSubObj);
         currAtom = myAtom.subExpr[0];
         //currExpr = myAtom.subExpr; // wrong place
@@ -99,10 +102,22 @@
     function keyDownHandler(e) {
         switch(e.keyCode) {
             case 57:  // Open Parathesis
-            case 219: // Open bracket
-                currExpr.push( newObj2withSub("([])"));
+                currExpr.push( newObj2withSub("()"));
+                console.log("currExpr        : ", currExpr);
+                currExpr[currExpr.length-1].subExpr[0].parentExpr = currExpr; // give first child node the parent expr for curser movement
+                currExpr = currExpr[currExpr.length-1].subExpr; //shift current list one level down
+                break;
+            case 219: // Open Bracket
+                currExpr.push( newObj2withSub("[]"));
+                console.log("currExpr        : ", currExpr);
+                currExpr[currExpr.length-1].subExpr[0].parentExpr = currExpr; // give first child node the parent expr for curser movement
                 currExpr = currExpr[currExpr.length-1].subExpr; //shift current list one level down
                 //startingExpr[stringExpr.length].subExpr.push(newSubObj());
+                break;
+            case 48: // Close Parenthesis
+            case 221: // Close bracket
+                currExpr = currExpr[0].parentExpr; // return curser to parent Expr
+                currAtom = currExpr[currExpr.length-1]; // atom defines draw cordnits
                 break;
             case 39: // Right arrow
                 break;
