@@ -7,18 +7,41 @@
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
 
+/*******                Vector Lib                     ******/
+    function Vector(x, y) {
+        if ( !(this instanceof Vector) ) { // dont need new
+           var new_vec = new Vector(x, y);
+           return new_vec;
+        }
+        this.x = x || 0;
+        this.y = y || 0;
+    };
+
+	Vector.prototype.add = function(vecArg) {
+        return new Vector(this.x + vecArg.x, this.y + vecArg.y);
+	};
+
+    var deltaRightVector = new Vector(50,0);
+    var deltaDownVector = new Vector(0,50);
+
 /*******                Data                     ******/
-    var firstAtom = {
+    var firstAtom = { // Root Node - very first atom
         type: "",
-        text: "F",
+        text: "{}",
         mass: 50000,
         rad: 30,
         pos: new Vector(myCanvas.width/4, myCanvas.height/5),
         speed: new Vector(0, 0)
     };
 
-    var currAtom = firstAtom;
+    var currAtom = firstAtom; // for drawing
+
+
+    var startingExpr = [];
+    var currExpr = startingExpr;
     
+    //startingExpr.push(newObj2withSub());
+
     // First way
     function newObj1(myName){  // function object  
         if (!(this instanceof newObj1)) { // dont need new
@@ -50,9 +73,9 @@
     };
 
     function newObj2withSub(myName){ // object literal
-        var localSubObj = newSubObj("Sub 1");
+        var localSubObj = newSubObj("");
         var myAtom = {
-            text : myName || "lit",
+            text : myName || "",
             mass : 20,
             rad : 20,
             pos : currAtom.pos.add(deltaRightVector),
@@ -70,7 +93,7 @@
     
     function newSubObj(myName){ // object literal
         var myAtom = {
-            text : myName || "lit",
+            text : myName || "",
             mass : 20,
             rad : 20,
             pos : currAtom.pos.add(deltaDownVector),
@@ -79,16 +102,23 @@
         return myAtom;
     };
     
-    var startingExpr = [];
-    var currExpr = startingExpr;
-    startingExpr.push(firstAtom);
+
 
 
 /*******                Interpreter                     ******/
-    function interpret(ND_list) {
-        if( ND_list.length >= 3 ) {
-            if ( ND_list[0].text == "CDR" ) { // if 3 or more nodes exists, take out the second one
-                ND_list.splice(0,1); // start at second and take out 1 node.
+    function interpret(myExpr) {
+        console.log("interpret", myExpr);
+        if(myExpr[0].subExpr) {
+           console.log("has subexpr");
+           interpret(myExpr[0].subExpr); 
+        }
+        if( myExpr.length >= 3 ) {
+            console.log("length great or equal to 3");
+            console.log(myExpr[0]);
+            console.log(myExpr[0].text);
+            if ( myExpr[0].text == "CDR" ) { // if 3 or more nodes exists, take out the second one
+                console.log("CDR");
+                myExpr.splice(0,2); // start at second and take out 2 nodes.
             }
         }
 
@@ -153,22 +183,7 @@
     
     
     
-/*******                Vector Lib                     ******/
-    function Vector(x, y) {
-        if ( !(this instanceof Vector) ) { // dont need new
-           var new_vec = new Vector(x, y);
-           return new_vec;
-        }
-        this.x = x || 0;
-        this.y = y || 0;
-    };
 
-	Vector.prototype.add = function(vecArg) {
-        return new Vector(this.x + vecArg.x, this.y + vecArg.y);
-	};
-
-    var deltaRightVector = new Vector(50,0);
-    var deltaDownVector = new Vector(0,50);
 
 /*******                Graphics Lib                     ******/
     function drawText(myStr, posVector){
